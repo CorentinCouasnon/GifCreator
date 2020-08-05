@@ -27,13 +27,26 @@
     outline: none;
   }
 
+  .pixel:hover{
+    cursor: pointer;
+  }
+
   .image-row{
+    display: table;
+  }
+
+  .palette-row{
     display: table;
   }
 
   .image{
     margin: auto;
     width: 50%;
+  }
+
+  .palette{
+    margin: 50px auto 0px auto;
+    width: 40%;
   }
 
   </style>
@@ -108,33 +121,79 @@
     }
   }
 
+  class Palette extends React.Component {
+    constructor(props) {
+      super(props);
+    }
+
+    renderPixel(i, j) {
+      return (
+        <Pixel
+          key={i.toString() + j.toString()}
+          value={this.props.colors[i][j]}
+        />
+      );
+    }
+
+    render() {
+      const pixelsLine1 = [];
+      const pixelsLine2 = [];
+
+      for (let j = 0; j < 6; j++) {
+        pixelsLine1.push(this.renderPixel(0, j))
+        pixelsLine2.push(this.renderPixel(1, j))
+      }
+
+      return (
+        <div className="palette">
+          <div className="palette-row">
+            {pixelsLine1}
+          </div>
+          <div className="palette-row">
+            {pixelsLine2}
+          </div>
+        </div>
+      );
+    }
+  }
+
   class Creator extends React.Component {
     constructor(props) {
       super(props);
 
       this.state = {
         // L'état de la couleur change a chaque clique sur la palette
-        color: "red",
+        color: "#FF0000",
 
         // L'état des pixels changent a chqaue clique sur un pixels
-        pixels: Array(8).fill(Array(8).fill("white"))
+        pixels: Array(8).fill(Array(8).fill("#FFFFFF"))
       };
     }
 
     render() {
       return (
-        <Image
-          pixels={this.state.pixels}
-          color={this.state.color}
-        />
+        <div>
+          <Image
+            pixels={this.state.pixels}
+            color={this.state.color}
+          />
+          <Palette
+            colors={this.props.colors}
+          />
+        </div>
       );
     }
   }
 
   // ========================================
 
+  const COLORS = [
+    ["#FFFFFF", "#F23E11", "#F2A111", "#F1F211", "#77F211", "#11F29F"],
+    ["#000000", "#8E11F2", "#E311F2", "#F21148", "#1197F2", "#1B11F2"],
+  ];
+
   ReactDOM.render(
-    <Creator />,
+    <Creator colors={COLORS}/>,
     document.getElementById('root')
   );
 </script>
