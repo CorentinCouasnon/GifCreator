@@ -74,7 +74,7 @@
     render() {
       return (
         <button
-          className={"pixel " + this.props.active}
+          className={typeof this.props.active === "undefined" ? "pixel" : "pixel " + this.props.active}
           onClick={this.props.onClick}
           style={{
             backgroundColor: this.props.value
@@ -94,6 +94,7 @@
         <Pixel
           key={i.toString() + j.toString()}
           value={this.props.pixels[i][j]}
+          onClick={(e) => this.props.onClick(i, j)}
         />
       );
     }
@@ -196,13 +197,14 @@
 
       this.state = {
         // L'état de la couleur change a chaque clique sur la palette
-        color: "#FF0000",
+        color: "#FFFFFF",
 
         // L'état des pixels changent a chqaue clique sur un pixels
         pixels: Array(8).fill(Array(8).fill("#FFFFFF"))
       };
 
       this.setColor = this.setColor.bind(this)
+      this.drawColor = this.drawColor.bind(this)
     }
 
     setColor(value) {
@@ -211,12 +213,34 @@
       })
     }
 
+    // Dégeulasse mais après 3h il n'y a que ça qui marche
+    drawColor(row, col) {
+      let array = [];
+
+      for (var i = 0; i < 8; i++) {
+        array.push(["", "", "", "", "", "", "", ""]);
+        for (var j = 0; j < 8; j++) {
+          if(i == row && j == col){
+            array[i][j] = this.state.color;
+          } else {
+            array[i][j] = this.state.pixels[i][j];
+          }
+        }
+      }
+
+      console.log(array);
+
+      this.setState({
+        pixels: array
+      })
+    }
+
     render() {
       return (
         <div>
           <Image
             pixels={this.state.pixels}
-            color={this.state.color}
+            onClick={this.drawColor}
           />
           <Palette
             colors={this.props.colors}
