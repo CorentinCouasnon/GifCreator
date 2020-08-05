@@ -8,28 +8,12 @@
   body {
     font: 14px "Century Gothic", Futura, sans-serif;
     margin: 20px;
+    background-color: #F5F5DC;
   }
 
-  ol, ul {
-    padding-left: 30px;
-  }
-
-  .board-row:after {
-    clear: both;
-    content: "";
-    display: table;
-  }
-
-  .status {
-    margin-bottom: 10px;
-  }
-
-  .square {
-    background: #fff;
-    border: 1px solid #999;
+  .pixel {
+    border: 1px solid #444;
     float: left;
-    font-size: 24px;
-    font-weight: bold;
     line-height: 34px;
     height: 34px;
     margin-right: -1px;
@@ -39,21 +23,17 @@
     width: 34px;
   }
 
-  .square:focus {
+  .pixel:focus {
     outline: none;
   }
 
-  .kbd-navigation .square:focus {
-    background: #ddd;
+  .image-row{
+    display: table;
   }
 
-  .game {
-    display: flex;
-    flex-direction: row;
-  }
-
-  .game-info {
-    margin-left: 20px;
+  .image{
+    margin: auto;
+    width: 50%;
   }
 
   </style>
@@ -69,21 +49,92 @@
 
 <!-- Charge notre composant React -->
 <script type="text/babel">
-  class Square extends React.Component {
+  class Pixel extends React.Component {
+    constructor(props) {
+      super(props);
+    }
+
     render() {
       return (
-        <button className="square">
-          1
-        </button>
-      );s
+        <button className="pixel"
+          style={{
+            backgroundColor: this.props.value
+          }}
+        />
+      );
     }
   }
 
+  class Image extends React.Component {
+    constructor(props) {
+      super(props);
+    }
+
+    renderPixel(i, j) {
+      return (
+        <Pixel
+          key={i.toString() + j.toString()}
+          value={this.props.pixels[i][j]}
+        />
+      );
+    }
+
+    renderRow(i) {
+      const pixels = [];
+
+      for (let j = 0; j < 8; j++) {
+        pixels.push(this.renderPixel(i, j))
+      }
+
+      return (
+        <div className="image-row" key={i.toString()}>
+          {pixels}
+        </div>
+      );
+    }
+
+    render() {
+      const rows = [];
+
+      for (let i = 0; i < 8; i++) {
+        rows.push(this.renderRow(i))
+      }
+
+      return (
+        <div className="image">
+          {rows}
+        </div>
+      );
+    }
+  }
+
+  class Creator extends React.Component {
+    constructor(props) {
+      super(props);
+
+      this.state = {
+        // L'état de la couleur change a chaque clique sur la palette
+        color: "red",
+
+        // L'état des pixels changent a chqaue clique sur un pixels
+        pixels: Array(8).fill(Array(8).fill("white"))
+      };
+    }
+
+    render() {
+      return (
+        <Image
+          pixels={this.state.pixels}
+          color={this.state.color}
+        />
+      );
+    }
+  }
 
   // ========================================
 
   ReactDOM.render(
-    <Square />,
+    <Creator />,
     document.getElementById('root')
   );
 </script>
