@@ -159,7 +159,11 @@
           key={i.toString() + j.toString()}
           value={this.props.colors[i][j]}
           active={this.state.active[i][j]}
-          onClick={(e) => this.setActive(i, j)}
+          onClick={(e) => {
+              this.setActive(i, j),
+              this.props.onClick(this.props.colors[i][j])
+            }
+          }
         />
       );
     }
@@ -197,6 +201,14 @@
         // L'état des pixels changent a chqaue clique sur un pixels
         pixels: Array(8).fill(Array(8).fill("#FFFFFF"))
       };
+
+      this.setColor = this.setColor.bind(this)
+    }
+
+    setColor(value) {
+      this.setState({
+        color: value
+      })
     }
 
     render() {
@@ -208,6 +220,7 @@
           />
           <Palette
             colors={this.props.colors}
+            onClick={this.setColor}
           />
         </div>
       );
