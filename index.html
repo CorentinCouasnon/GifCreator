@@ -113,7 +113,7 @@
     renderRow(i) {
       const pixels = [];
 
-      for (let j = 0; j < 8; j++) {
+      for (let j = 0; j < this.props.size; j++) {
         pixels.push(this.renderPixel(i, j))
       }
 
@@ -127,7 +127,7 @@
     render() {
       const rows = [];
 
-      for (let i = 0; i < 8; i++) {
+      for (let i = 0; i < this.props.size; i++) {
         rows.push(this.renderRow(i))
       }
 
@@ -228,7 +228,7 @@
     render() {
       return (
         <div className="caption">
-          <p><i className="fas fa-minus"></i>&nbsp;8 x 8&nbsp;<i className="fas fa-plus"></i></p>
+          <p><i className="fas fa-minus" onClick={() => this.props.onClick(this.props.size - 4)}></i>&nbsp;{this.props.size} x {this.props.size}&nbsp;<i className="fas fa-plus" onClick={() => this.props.onClick(this.props.size + 4)}></i></p>
           <p><i className="fas fa-caret-left"></i>&nbsp;1 / 1&nbsp;<i className="fas fa-caret-right"></i></p>
         </div>
       );
@@ -243,12 +243,24 @@
         // L'état de la couleur change a chaque clique sur la palette
         color: "#FFFFFF",
 
+        // La taille de l'image
+        size: 8,
+
         // L'état des pixels changent a chqaue clique sur un pixels
         pixels: Array(8).fill(Array(8).fill("#FFFFFF"))
       };
 
       this.setColor = this.setColor.bind(this)
       this.drawColor = this.drawColor.bind(this)
+      this.setSize = this.setSize.bind(this)
+    }
+
+    setSize(value) {
+      if(value >= 4 && value <= 20)
+      this.setState({
+        size: value,
+        pixels: Array(value).fill(Array(value).fill("#FFFFFF"))
+      })
     }
 
     setColor(value) {
@@ -264,9 +276,9 @@
       if(e.ctrlKey) {
         let prevColor = this.state.pixels[row][col];
 
-        for (var i = 0; i < 8; i++) {
+        for (var i = 0; i < this.state.size; i++) {
           array.push(["", "", "", "", "", "", "", ""]);
-          for (var j = 0; j < 8; j++) {
+          for (var j = 0; j < this.state.size; j++) {
             if(this.state.pixels[i][j] == prevColor){
               array[i][j] = this.state.color;
             } else {
@@ -275,9 +287,9 @@
           }
         }
       } else {
-        for (var i = 0; i < 8; i++) {
+        for (var i = 0; i < this.state.size; i++) {
           array.push(["", "", "", "", "", "", "", ""]);
-          for (var j = 0; j < 8; j++) {
+          for (var j = 0; j < this.state.size; j++) {
             if(i == row && j == col){
               array[i][j] = this.state.color;
             } else {
@@ -296,9 +308,13 @@
       return (
         <div>
           <Menu />
-          <Caption />
+          <Caption
+            size={this.state.size}
+            onClick={this.setSize}
+          />
           <Image
             pixels={this.state.pixels}
+            size={this.state.size}
             onClick={this.drawColor}
           />
           <Palette
