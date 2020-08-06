@@ -259,16 +259,30 @@
 
     // Dégeulasse mais après 3h il n'y a que ça qui marche
     drawColor(e, row, col) {
-      //console.log(e.ctrlKey);
       let array = [];
 
-      for (var i = 0; i < 8; i++) {
-        array.push(["", "", "", "", "", "", "", ""]);
-        for (var j = 0; j < 8; j++) {
-          if(i == row && j == col){
-            array[i][j] = this.state.color;
-          } else {
-            array[i][j] = this.state.pixels[i][j];
+      if(e.ctrlKey) {
+        let prevColor = this.state.pixels[row][col];
+
+        for (var i = 0; i < 8; i++) {
+          array.push(["", "", "", "", "", "", "", ""]);
+          for (var j = 0; j < 8; j++) {
+            if(this.state.pixels[i][j] == prevColor){
+              array[i][j] = this.state.color;
+            } else {
+              array[i][j] = this.state.pixels[i][j];
+            }
+          }
+        }
+      } else {
+        for (var i = 0; i < 8; i++) {
+          array.push(["", "", "", "", "", "", "", ""]);
+          for (var j = 0; j < 8; j++) {
+            if(i == row && j == col){
+              array[i][j] = this.state.color;
+            } else {
+              array[i][j] = this.state.pixels[i][j];
+            }
           }
         }
       }
