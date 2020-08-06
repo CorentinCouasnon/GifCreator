@@ -14,12 +14,8 @@
   .pixel {
     border: 1px solid #444;
     float: left;
-    line-height: 34px;
     height: 34px;
-    margin-right: -1px;
-    margin-top: -1px;
     padding: 0;
-    text-align: center;
     width: 34px;
   }
 
@@ -44,13 +40,27 @@
   }
 
   .image{
-    margin: auto;
-    width: 50%;
+    margin: 10px auto 0px auto;
+    display: table;
   }
 
   .palette{
     margin: 50px auto 0px auto;
+    display: table;
+  }
+
+  .caption{
+    display: flex;
+    justify-content: space-between;
+    margin: 30px auto 0px auto;
     width: 40%;
+  }
+
+  .menu{
+    display: flex;
+    justify-content: space-evenly;
+    margin: 50px auto 0px auto;
+    width: 70%;
   }
 
   </style>
@@ -63,6 +73,7 @@
 <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
 <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+<script src="https://kit.fontawesome.com/6d2059ef87.js" crossorigin="anonymous"></script>
 
 <!-- Charge notre composant React -->
 <script type="text/babel">
@@ -94,7 +105,7 @@
         <Pixel
           key={i.toString() + j.toString()}
           value={this.props.pixels[i][j]}
-          onClick={(e) => this.props.onClick(i, j)}
+          onClick={(e) => this.props.onClick(e, i, j)}
         />
       );
     }
@@ -191,6 +202,39 @@
     }
   }
 
+  class Menu extends React.Component {
+    constructor(props) {
+      super(props);
+    }
+
+    render() {
+      return (
+        <div className="menu">
+          <button type="button">Add</button>
+          <button type="button">Remove</button>
+          <button type="button">Play</button>
+          <button type="button">Stop</button>
+          <button type="button">Save</button>
+        </div>
+      );
+    }
+  }
+
+  class Caption extends React.Component {
+    constructor(props) {
+      super(props);
+    }
+
+    render() {
+      return (
+        <div className="caption">
+          <p><i className="fas fa-minus"></i>&nbsp;8 x 8&nbsp;<i className="fas fa-plus"></i></p>
+          <p><i className="fas fa-caret-left"></i>&nbsp;1 / 1&nbsp;<i className="fas fa-caret-right"></i></p>
+        </div>
+      );
+    }
+  }
+
   class Creator extends React.Component {
     constructor(props) {
       super(props);
@@ -214,7 +258,8 @@
     }
 
     // Dégeulasse mais après 3h il n'y a que ça qui marche
-    drawColor(row, col) {
+    drawColor(e, row, col) {
+      //console.log(e.ctrlKey);
       let array = [];
 
       for (var i = 0; i < 8; i++) {
@@ -228,8 +273,6 @@
         }
       }
 
-      console.log(array);
-
       this.setState({
         pixels: array
       })
@@ -238,6 +281,8 @@
     render() {
       return (
         <div>
+          <Menu />
+          <Caption />
           <Image
             pixels={this.state.pixels}
             onClick={this.drawColor}
