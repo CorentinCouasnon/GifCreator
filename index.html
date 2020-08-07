@@ -144,7 +144,7 @@
       super(props);
 
       this.state = {
-        "active": [
+        active: [
           ["active", "", "", "", "", ""],
           ["", "", "", "", "", ""]
         ]
@@ -154,7 +154,7 @@
     }
 
     setActive(i, j) {
-      const arr = [
+      let arr = [
         ["", "", "", "", "", ""],
         ["", "", "", "", "", ""]
       ]
@@ -212,8 +212,8 @@
         <div className="menu">
           <button type="button" onClick={this.props.onAdd}>Add</button>
           <button type="button" onClick={this.props.onRemove}>Remove</button>
-          <button type="button">Play</button>
-          <button type="button">Stop</button>
+          <button type="button" onClick={this.props.onPlay}>Play</button>
+          <button type="button" onClick={this.props.onStop}>Stop</button>
           <button type="button">Save</button>
         </div>
       );
@@ -228,8 +228,16 @@
     render() {
       return (
         <div className="caption">
-          <p><i className="fas fa-minus" onClick={() => this.props.onClickSize(this.props.size - 4)}></i>&nbsp;{this.props.size} x {this.props.size}&nbsp;<i className="fas fa-plus" onClick={() => this.props.onClickSize(this.props.size + 4)}></i></p>
-          <p><i className="fas fa-caret-left" onClick={() => this.props.onClickImage(this.props.counter - 1)}></i>&nbsp;{this.props.counter + 1} / {this.props.length}&nbsp;<i className="fas fa-caret-right"  onClick={() => this.props.onClickImage(this.props.counter + 1)}></i></p>
+          <p>
+            <i className="fas fa-minus" onClick={() => this.props.onClickSize(this.props.size - 4)}></i>
+            &nbsp;{this.props.size} x {this.props.size}&nbsp;
+            <i className="fas fa-plus" onClick={() => this.props.onClickSize(this.props.size + 4)}></i>
+          </p>
+          <p>
+            <i className="fas fa-caret-left" onClick={() => this.props.onClickImage(this.props.counter - 1)}></i>
+            &nbsp;{this.props.counter + 1} / {this.props.length}&nbsp;
+            <i className="fas fa-caret-right"  onClick={() => this.props.onClickImage(this.props.counter + 1)}></i>
+          </p>
         </div>
       );
     }
@@ -246,11 +254,14 @@
         // La taille de l'image
         size: 8,
 
-        // L'état des images changent a chqaue clique sur un pixels
+        // L'état des images changent a chqaue clique sur un pixel
         images: Array(Array(8).fill(Array(8).fill("#FFFFFF"))),
 
         // L'état counter qui affiche l'image correspondante
-        counter: 0
+        counter: 0,
+
+        // Le temps en ms entre chaque Tick
+        interval: 16 //60 image par seconde
       };
 
       this.setColor = this.setColor.bind(this)
@@ -259,6 +270,8 @@
       this.addImage = this.addImage.bind(this)
       this.viewImage = this.viewImage.bind(this)
       this.removeImage = this.removeImage.bind(this)
+      this.startTick = this.startTick.bind(this)
+      this.stopTick = this.stopTick.bind(this)
     }
 
     setSize(value) {
@@ -280,7 +293,10 @@
     }
 
     viewImage(value) {
-      if(value >= 0 && value <= this.state.images.length - 1)
+      if(value < 0)
+        value =  this.state.images.length - 1
+      else if (value > this.state.images.length - 1)
+        value = 0
       this.setState({
         counter: value,
         size: this.state.images[value].length
@@ -293,7 +309,7 @@
       })
     }
 
-    // Dégeulasse mais après 3h il n'y a que ça qui marche
+    // Dégeulasse
     drawColor(e, image, row, col) {
       let array = [];
 
@@ -364,12 +380,33 @@
       }
     }
 
+    tick() {
+      let value = this.state.counter + 1 == this.state.images.length ? 0 : this.state.counter + 1;
+
+      this.setState({
+        counter: value
+      })
+    }
+
+    startTick() {
+      this.timerId = setInterval(
+        () => this.tick(),
+        this.state.interval
+      );
+    }
+
+    stopTick() {
+      clearInterval(this.timerId);
+    }
+
     render() {
       return (
         <div>
           <Menu
             onAdd={this.addImage}
             onRemove={this.removeImage}
+            onPlay={this.startTick}
+            onStop={this.stopTick}
           />
           <Caption
             length={this.state.images.length}
