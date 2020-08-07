@@ -214,6 +214,9 @@
           <button type="button" onClick={this.props.onRemove}>Remove</button>
           <button type="button" onClick={this.props.onPlay}>Play</button>
           <button type="button" onClick={this.props.onStop}>Stop</button>
+          <button type="button" onClick={() => this.props.onInterval(1)}>x1</button>
+          <button type="button" onClick={() => this.props.onInterval(2)}>x2</button>
+          <button type="button" onClick={() => this.props.onInterval(3)}>x3</button>
           <button type="button">Save</button>
         </div>
       );
@@ -272,6 +275,7 @@
       this.removeImage = this.removeImage.bind(this)
       this.startTick = this.startTick.bind(this)
       this.stopTick = this.stopTick.bind(this)
+      this.setInterval = this.setInterval.bind(this)
     }
 
     setSize(value) {
@@ -368,7 +372,7 @@
 
     removeImage() {
       if(this.state.images.length > 1) {
-        let counter = this.state.counter - 1;
+        let counter = this.state.counter - 1 >= 0 ? this.state.counter - 1 : 0;
         let arr = this.state.images;
 
         arr.splice(this.state.counter, 1);
@@ -385,6 +389,26 @@
 
       this.setState({
         counter: value
+      })
+    }
+
+    setInterval(speedLevel) {
+      let value = 16;
+
+      switch (speedLevel) {
+        case 1:
+          value = 50
+          break;
+        case 2:
+          value = 16
+          break;
+        case 3:
+          value = 8
+          break;
+      }
+
+      this.setState({
+        interval: value
       })
     }
 
@@ -407,6 +431,7 @@
             onRemove={this.removeImage}
             onPlay={this.startTick}
             onStop={this.stopTick}
+            onInterval={this.setInterval}
           />
           <Caption
             length={this.state.images.length}
