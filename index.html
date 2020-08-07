@@ -1,19 +1,470 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title>Gif Creator</title>
-    <link rel="stylesheet" type="text/css" href="style.css" />
-  </head>
-  <body>
-    <div id="like_button_container"></div>
+<head>
+  <meta charset="utf-8">
+  <title>Gif Creator</title>
 
-    <!-- Charge React -->
-    <!-- Remarque : pour le déploiement, remplacez "development.js" par "production.min.js" -->
-    <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+  <style media="screen">
+  body {
+    font: 14px "Century Gothic", Futura, sans-serif;
+    margin: 20px;
+    background-color: #F5F5DC;
+  }
 
-    <!-- Charge notre composant React -->
-    <script src="like_button.js"></script>
-  </body>
+  .pixel {
+    border: 1px solid #444;
+    float: left;
+    height: 34px;
+    padding: 0;
+    width: 34px;
+  }
+
+  .pixel:focus {
+    outline: none;
+  }
+
+  .pixel:hover{
+    cursor: pointer;
+  }
+
+  .pixel.active{
+    border: 4px solid #111;;
+  }
+
+  .image-row{
+    display: table;
+  }
+
+  .palette-row{
+    display: table;
+  }
+
+  .image{
+    margin: 10px auto 0px auto;
+    display: table;
+  }
+
+  .palette{
+    margin: 50px auto 0px auto;
+    display: table;
+  }
+
+  .caption{
+    display: flex;
+    justify-content: space-between;
+    margin: 30px auto 0px auto;
+    width: 20%;
+  }
+
+  .menu{
+    display: flex;
+    justify-content: space-evenly;
+    margin: 50px auto 0px auto;
+    width: 40%;
+  }
+
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- Charge React -->
+<!-- Remarque : pour le déploiement, remplacez "development.js" par "production.min.js" -->
+<script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+<script src="https://kit.fontawesome.com/6d2059ef87.js" crossorigin="anonymous"></script>
+
+<!-- Charge notre composant React -->
+<script type="text/babel">
+  class Pixel extends React.Component {
+    constructor(props) {
+      super(props);
+    }
+
+    render() {
+      return (
+        <button
+          className={typeof this.props.active === "undefined" ? "pixel" : "pixel " + this.props.active}
+          onClick={this.props.onClick}
+          style={{
+            backgroundColor: this.props.value
+          }}
+        />
+      );
+    }
+  }
+
+  class Image extends React.Component {
+    constructor(props) {
+      super(props);
+    }
+
+    renderPixel(i, j, k) {
+      return (
+        <Pixel
+          key={i.toString() + j.toString() + k.toString()}
+          value={this.props.images[i][j][k]}
+          onClick={(e) => this.props.onClick(e, i, j, k)}
+        />
+      );
+    }
+
+    renderRow(i, j) {
+      const pixels = [];
+
+      for (let k = 0; k < this.props.images[this.props.counter].length; k++) {
+        pixels.push(this.renderPixel(i, j, k))
+      }
+
+      return (
+        <div className="image-row" key={i.toString() + j.toString()}>
+          {pixels}
+        </div>
+      );
+    }
+
+    render() {
+      const rows = [];
+
+      for (let j = 0; j < this.props.images[this.props.counter].length; j++) {
+        rows.push(this.renderRow(this.props.counter, j))
+      }
+
+      return (
+        <div className="image">
+          {rows}
+        </div>
+      );
+    }
+  }
+
+  class Palette extends React.Component {
+    constructor(props) {
+      super(props);
+
+      this.state = {
+        active: [
+          ["active", "", "", "", "", ""],
+          ["", "", "", "", "", ""]
+        ]
+      };
+
+      this.setActive = this.setActive.bind(this);
+    }
+
+    setActive(i, j) {
+      let arr = [
+        ["", "", "", "", "", ""],
+        ["", "", "", "", "", ""]
+      ]
+      arr[i][j] = "active"
+
+      this.setState({
+        active: arr
+      });
+    }
+
+    renderPixel(i, j) {
+      return (
+        <Pixel
+          key={i.toString() + j.toString()}
+          value={this.props.colors[i][j]}
+          active={this.state.active[i][j]}
+          onClick={(e) => {
+              this.setActive(i, j),
+              this.props.onClick(this.props.colors[i][j])
+            }
+          }
+        />
+      );
+    }
+
+    render() {
+      const pixelsLine1 = [];
+      const pixelsLine2 = [];
+
+      for (let j = 0; j < 6; j++) {
+        pixelsLine1.push(this.renderPixel(0, j))
+        pixelsLine2.push(this.renderPixel(1, j))
+      }
+
+      return (
+        <div className="palette">
+          <div className="palette-row">
+            {pixelsLine1}
+          </div>
+          <div className="palette-row">
+            {pixelsLine2}
+          </div>
+        </div>
+      );
+    }
+  }
+
+  class Menu extends React.Component {
+    constructor(props) {
+      super(props);
+    }
+
+    render() {
+      return (
+        <div className="menu">
+          <button type="button" onClick={this.props.onAdd}>Add</button>
+          <button type="button" onClick={this.props.onRemove}>Remove</button>
+          <button type="button" onClick={this.props.onPlay}>Play</button>
+          <button type="button" onClick={this.props.onStop}>Stop</button>
+          <button type="button" onClick={() => this.props.onInterval(1)}>x1</button>
+          <button type="button" onClick={() => this.props.onInterval(2)}>x2</button>
+          <button type="button" onClick={() => this.props.onInterval(3)}>x3</button>
+          <button type="button">Save</button>
+        </div>
+      );
+    }
+  }
+
+  class Caption extends React.Component {
+    constructor(props) {
+      super(props);
+    }
+
+    render() {
+      return (
+        <div className="caption">
+          <p>
+            <i className="fas fa-minus" onClick={() => this.props.onClickSize(this.props.size - 4)}></i>
+            &nbsp;{this.props.size} x {this.props.size}&nbsp;
+            <i className="fas fa-plus" onClick={() => this.props.onClickSize(this.props.size + 4)}></i>
+          </p>
+          <p>
+            <i className="fas fa-caret-left" onClick={() => this.props.onClickImage(this.props.counter - 1)}></i>
+            &nbsp;{this.props.counter + 1} / {this.props.length}&nbsp;
+            <i className="fas fa-caret-right"  onClick={() => this.props.onClickImage(this.props.counter + 1)}></i>
+          </p>
+        </div>
+      );
+    }
+  }
+
+  class Creator extends React.Component {
+    constructor(props) {
+      super(props);
+
+      this.state = {
+        // L'état de la couleur change a chaque clique sur la palette
+        color: "#FFFFFF",
+
+        // La taille de l'image
+        size: 8,
+
+        // L'état des images changent a chqaue clique sur un pixel
+        images: Array(Array(8).fill(Array(8).fill("#FFFFFF"))),
+
+        // L'état counter qui affiche l'image correspondante
+        counter: 0,
+
+        // Le temps en ms entre chaque Tick
+        interval: 16 //60 image par seconde
+      };
+
+      this.setColor = this.setColor.bind(this)
+      this.drawColor = this.drawColor.bind(this)
+      this.setSize = this.setSize.bind(this)
+      this.addImage = this.addImage.bind(this)
+      this.viewImage = this.viewImage.bind(this)
+      this.removeImage = this.removeImage.bind(this)
+      this.startTick = this.startTick.bind(this)
+      this.stopTick = this.stopTick.bind(this)
+      this.setInterval = this.setInterval.bind(this)
+    }
+
+    setSize(value) {
+      let arr = []
+
+      for (var i = 0; i < this.state.images.length; i++) {
+        if(this.state.counter == i){
+          arr.push(Array(value).fill(Array(value).fill("#FFFFFF")));
+        } else {
+          arr.push(this.state.images[i]);
+        }
+      }
+
+      if(value >= 4 && value <= 20)
+      this.setState({
+        size: value,
+        images: arr
+      })
+    }
+
+    viewImage(value) {
+      if(value < 0)
+        value =  this.state.images.length - 1
+      else if (value > this.state.images.length - 1)
+        value = 0
+      this.setState({
+        counter: value,
+        size: this.state.images[value].length
+      })
+    }
+
+    setColor(value) {
+      this.setState({
+        color: value
+      })
+    }
+
+    // Dégeulasse
+    drawColor(e, image, row, col) {
+      let array = [];
+
+      if(e.ctrlKey) {
+        let prevColor = this.state.images[image][row][col];
+
+        for (var i = 0; i < this.state.size; i++) {
+          array.push(["", "", "", "", "", "", "", ""]);
+          for (var j = 0; j < this.state.size; j++) {
+            if(this.state.images[image][i][j] == prevColor){
+              array[i][j] = this.state.color;
+            } else {
+              array[i][j] = this.state.images[image][i][j];
+            }
+          }
+        }
+      } else {
+        for (var i = 0; i < this.state.size; i++) {
+          array.push(["", "", "", "", "", "", "", ""]);
+          for (var j = 0; j < this.state.size; j++) {
+            if(i == row && j == col){
+              array[i][j] = this.state.color;
+            } else {
+              array[i][j] = this.state.images[image][i][j];
+            }
+          }
+        }
+      }
+
+      let arr = [];
+
+      for (var i = 0; i < this.state.images.length; i++) {
+        if(this.state.counter == i){
+          arr.push(array);
+        } else {
+          arr.push(this.state.images[i]);
+        }
+      }
+
+      this.setState({
+        images: arr
+      })
+    }
+
+    addImage() {
+      let nbreImages = this.state.images.length;
+      let arr = this.state.images;
+
+      arr.push(this.state.images[nbreImages - 1]);
+
+      this.setState({
+        images: arr,
+        counter: nbreImages
+      })
+    }
+
+    removeImage() {
+      if(this.state.images.length > 1) {
+        let counter = this.state.counter - 1 >= 0 ? this.state.counter - 1 : 0;
+        let arr = this.state.images;
+
+        arr.splice(this.state.counter, 1);
+
+        this.setState({
+          images: arr,
+          counter: counter
+        })
+      }
+    }
+
+    tick() {
+      let value = this.state.counter + 1 == this.state.images.length ? 0 : this.state.counter + 1;
+
+      this.setState({
+        counter: value
+      })
+    }
+
+    setInterval(speedLevel) {
+      let value = 16;
+
+      switch (speedLevel) {
+        case 1:
+          value = 50
+          break;
+        case 2:
+          value = 16
+          break;
+        case 3:
+          value = 8
+          break;
+      }
+
+      this.setState({
+        interval: value
+      })
+    }
+
+    startTick() {
+      this.timerId = setInterval(
+        () => this.tick(),
+        this.state.interval
+      );
+    }
+
+    stopTick() {
+      clearInterval(this.timerId);
+    }
+
+    render() {
+      return (
+        <div>
+          <Menu
+            onAdd={this.addImage}
+            onRemove={this.removeImage}
+            onPlay={this.startTick}
+            onStop={this.stopTick}
+            onInterval={this.setInterval}
+          />
+          <Caption
+            length={this.state.images.length}
+            counter={this.state.counter}
+            size={this.state.size}
+            onClickSize={this.setSize}
+            onClickImage={this.viewImage}
+          />
+          <Image
+            images={this.state.images}
+            counter={this.state.counter}
+            onClick={this.drawColor}
+          />
+          <Palette
+            colors={this.props.colors}
+            onClick={this.setColor}
+          />
+        </div>
+      );
+    }
+  }
+
+  // ========================================
+
+  const COLORS = [
+    ["#FFFFFF", "#F23E11", "#F2A111", "#F1F211", "#77F211", "#11F29F"],
+    ["#000000", "#8E11F2", "#E311F2", "#F21148", "#1197F2", "#1B11F2"],
+  ];
+
+  ReactDOM.render(
+    <Creator colors={COLORS}/>,
+    document.getElementById('root')
+  );
+</script>
+</body>
 </html>
