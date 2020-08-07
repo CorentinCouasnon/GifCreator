@@ -211,7 +211,7 @@
       return (
         <div className="menu">
           <button type="button" onClick={this.props.onAdd}>Add</button>
-          <button type="button">Remove</button>
+          <button type="button" onClick={this.props.onRemove}>Remove</button>
           <button type="button">Play</button>
           <button type="button">Stop</button>
           <button type="button">Save</button>
@@ -258,6 +258,7 @@
       this.setSize = this.setSize.bind(this)
       this.addImage = this.addImage.bind(this)
       this.viewImage = this.viewImage.bind(this)
+      this.removeImage = this.removeImage.bind(this)
     }
 
     setSize(value) {
@@ -349,11 +350,26 @@
       })
     }
 
+    removeImage() {
+      if(this.state.images.length > 1) {
+        let counter = this.state.counter - 1;
+        let arr = this.state.images;
+
+        arr.splice(this.state.counter, 1);
+
+        this.setState({
+          images: arr,
+          counter: counter
+        })
+      }
+    }
+
     render() {
       return (
         <div>
           <Menu
             onAdd={this.addImage}
+            onRemove={this.removeImage}
           />
           <Caption
             length={this.state.images.length}
