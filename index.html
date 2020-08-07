@@ -53,14 +53,14 @@
     display: flex;
     justify-content: space-between;
     margin: 30px auto 0px auto;
-    width: 40%;
+    width: 20%;
   }
 
   .menu{
     display: flex;
     justify-content: space-evenly;
     margin: 50px auto 0px auto;
-    width: 70%;
+    width: 40%;
   }
 
   </style>
@@ -100,25 +100,25 @@
       super(props);
     }
 
-    renderPixel(i, j) {
+    renderPixel(i, j, k) {
       return (
         <Pixel
-          key={i.toString() + j.toString()}
-          value={this.props.pixels[i][j]}
-          onClick={(e) => this.props.onClick(e, i, j)}
+          key={i.toString() + j.toString() + k.toString()}
+          value={this.props.images[i][j][k]}
+          onClick={(e) => this.props.onClick(e, i, j, k)}
         />
       );
     }
 
-    renderRow(i) {
+    renderRow(i, j) {
       const pixels = [];
 
-      for (let j = 0; j < this.props.size; j++) {
-        pixels.push(this.renderPixel(i, j))
+      for (let k = 0; k < this.props.images[this.props.counter].length; k++) {
+        pixels.push(this.renderPixel(i, j, k))
       }
 
       return (
-        <div className="image-row" key={i.toString()}>
+        <div className="image-row" key={i.toString() + j.toString()}>
           {pixels}
         </div>
       );
@@ -127,8 +127,8 @@
     render() {
       const rows = [];
 
-      for (let i = 0; i < this.props.size; i++) {
-        rows.push(this.renderRow(i))
+      for (let j = 0; j < this.props.images[this.props.counter].length; j++) {
+        rows.push(this.renderRow(this.props.counter, j))
       }
 
       return (
@@ -210,7 +210,7 @@
     render() {
       return (
         <div className="menu">
-          <button type="button">Add</button>
+          <button type="button" onClick={this.props.onAdd}>Add</button>
           <button type="button">Remove</button>
           <button type="button">Play</button>
           <button type="button">Stop</button>
@@ -228,8 +228,8 @@
     render() {
       return (
         <div className="caption">
-          <p><i className="fas fa-minus" onClick={() => this.props.onClick(this.props.size - 4)}></i>&nbsp;{this.props.size} x {this.props.size}&nbsp;<i className="fas fa-plus" onClick={() => this.props.onClick(this.props.size + 4)}></i></p>
-          <p><i className="fas fa-caret-left"></i>&nbsp;1 / 1&nbsp;<i className="fas fa-caret-right"></i></p>
+          <p><i className="fas fa-minus" onClick={() => this.props.onClickSize(this.props.size - 4)}></i>&nbsp;{this.props.size} x {this.props.size}&nbsp;<i className="fas fa-plus" onClick={() => this.props.onClickSize(this.props.size + 4)}></i></p>
+          <p><i className="fas fa-caret-left" onClick={() => this.props.onClickImage(this.props.counter - 1)}></i>&nbsp;{this.props.counter + 1} / {this.props.length}&nbsp;<i className="fas fa-caret-right"  onClick={() => this.props.onClickImage(this.props.counter + 1)}></i></p>
         </div>
       );
     }
@@ -246,20 +246,43 @@
         // La taille de l'image
         size: 8,
 
-        // L'état des pixels changent a chqaue clique sur un pixels
-        pixels: Array(8).fill(Array(8).fill("#FFFFFF"))
+        // L'état des images changent a chqaue clique sur un pixels
+        images: Array(Array(8).fill(Array(8).fill("#FFFFFF"))),
+
+        // L'état counter qui affiche l'image correspondante
+        counter: 0
       };
 
       this.setColor = this.setColor.bind(this)
       this.drawColor = this.drawColor.bind(this)
       this.setSize = this.setSize.bind(this)
+      this.addImage = this.addImage.bind(this)
+      this.viewImage = this.viewImage.bind(this)
     }
 
     setSize(value) {
+      let arr = []
+
+      for (var i = 0; i < this.state.images.length; i++) {
+        if(this.state.counter == i){
+          arr.push(Array(value).fill(Array(value).fill("#FFFFFF")));
+        } else {
+          arr.push(this.state.images[i]);
+        }
+      }
+
       if(value >= 4 && value <= 20)
       this.setState({
         size: value,
-        pixels: Array(value).fill(Array(value).fill("#FFFFFF"))
+        images: arr
+      })
+    }
+
+    viewImage(value) {
+      if(value >= 0 && value <= this.state.images.length - 1)
+      this.setState({
+        counter: value,
+        size: this.state.images[value].length
       })
     }
 
@@ -270,19 +293,19 @@
     }
 
     // Dégeulasse mais après 3h il n'y a que ça qui marche
-    drawColor(e, row, col) {
+    drawColor(e, image, row, col) {
       let array = [];
 
       if(e.ctrlKey) {
-        let prevColor = this.state.pixels[row][col];
+        let prevColor = this.state.images[image][row][col];
 
         for (var i = 0; i < this.state.size; i++) {
           array.push(["", "", "", "", "", "", "", ""]);
           for (var j = 0; j < this.state.size; j++) {
-            if(this.state.pixels[i][j] == prevColor){
+            if(this.state.images[image][i][j] == prevColor){
               array[i][j] = this.state.color;
             } else {
-              array[i][j] = this.state.pixels[i][j];
+              array[i][j] = this.state.images[image][i][j];
             }
           }
         }
@@ -293,28 +316,55 @@
             if(i == row && j == col){
               array[i][j] = this.state.color;
             } else {
-              array[i][j] = this.state.pixels[i][j];
+              array[i][j] = this.state.images[image][i][j];
             }
           }
         }
       }
 
+      let arr = [];
+
+      for (var i = 0; i < this.state.images.length; i++) {
+        if(this.state.counter == i){
+          arr.push(array);
+        } else {
+          arr.push(this.state.images[i]);
+        }
+      }
+
       this.setState({
-        pixels: array
+        images: arr
+      })
+    }
+
+    addImage() {
+      let nbreImages = this.state.images.length;
+      let arr = this.state.images;
+
+      arr.push(this.state.images[nbreImages - 1]);
+
+      this.setState({
+        images: arr,
+        counter: nbreImages
       })
     }
 
     render() {
       return (
         <div>
-          <Menu />
+          <Menu
+            onAdd={this.addImage}
+          />
           <Caption
+            length={this.state.images.length}
+            counter={this.state.counter}
             size={this.state.size}
-            onClick={this.setSize}
+            onClickSize={this.setSize}
+            onClickImage={this.viewImage}
           />
           <Image
-            pixels={this.state.pixels}
-            size={this.state.size}
+            images={this.state.images}
+            counter={this.state.counter}
             onClick={this.drawColor}
           />
           <Palette
